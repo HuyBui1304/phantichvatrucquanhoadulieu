@@ -4,11 +4,11 @@ vector1 = c(1:8)
 vector2 = c("a", "b", "c", "d", "e", "f", "g", "h")
 vector3 = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE)
 vector4 = c(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8)
-vector5 = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L)
+vector5 = as.factor(c("Thấp", "Cao", "Trung bình", "Thấp", "Cao", "Trung bình", "Thấp", "Cao"))
 
 mySet1 <- data.frame(vector1,vector2,vector3,vector4,vector5)
 mySet1
-# kiểu dữ liệu của dataframe
+
 
 # a) Hiển thị dòng thứ 5 của dataframe đã tạo.
 head(mySet1)
@@ -21,7 +21,22 @@ head(mySet1, 7)
 mySet1[1:7,]
 
 # 2. Sử dụng bộ dữ liệu iris. Sử dụng chỉ số để hiển thị giá trị của mỗi dòng thứ 3 giữa quan sát thứ 40 và 120. Cố gắng sử dụng một dòng lệnh duy nhất (rút gọn mã để nó vừa trong một dòng duy nhất, không có bất kỳ bước trung gian nào).
+iris
+iris[seq(40,120,3),] # bước nhảy là 3
+
 # 3. Sử dụng bộ dữ liệu có sẵn "women".
+women
+View(women)
 # a) Thay đổi kiểu của cột đầu tiên thành kiểu ký tự.
+women$height <- as.character(women$height)
+str(women)
+
 # b) Thêm hai dòng mới vào bộ dữ liệu với các số tự tạo. Đảm bảo rằng bạn không làm mất các kiểu của biến trong dataframe chính trong quá trình này.
+new_rows <- data.frame(
+  height = as.character(c(78, 71)),
+  weight = c(165,168)
+)
+
+women <- rbind(women, new_rows)
+women
 # c) Thêm biến mới vào bộ dữ liệu và đặt tên là "shoe_size". Sử dụng hàm runif để tạo các giá trị cho biến này. Kích thước giày phải là số nguyên giữa 35 và 42.
