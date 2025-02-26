@@ -1,18 +1,15 @@
 # Nhiệm vụ
 # 1. Tạo và thêm tên duy nhất vào năm vector có độ dài 8. Làm cho các kiểu dữ liệu của chúng đa dạng. Tạo một dataframe có tên "mySet1" từ các vector đã tạo.
-df <- data.frame(
-  co1 = c(1, 2, 3, 4, 5, 6, 7, 8),
-  col2 = c("a", "b", "c", "d", "e", "f", "g", "h"),
-  col3 = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE),
-  col4 = c(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8),
-  col5 = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L),
-  col6 = c(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8),
-  col7 = c("a", "b", "c", "d", "e", "f", "g", "h"),
-  col8 = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE)
-)
+vector1 = c(1:8)
+vector2 = c("a", "b", "c", "d", "e", "f", "g", "h")
+vector3 = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE)
+vector4 = c(1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8)
+vector5 = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L)
 
-mySet1 <- df
+mySet1 <- data.frame(vector1,vector2,vector3,vector4,vector5)
 mySet1
+# kiểu dữ liệu của dataframe
+
 # a) Hiển thị dòng thứ 5 của dataframe đã tạo.
 head(mySet1)
 # b) Thay đổi tên của cột thứ hai của dataframe mySet1 thành "column02"
