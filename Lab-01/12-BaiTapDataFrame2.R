@@ -1,10 +1,16 @@
 # Sử dụng bộ dữ liệu có sẵn CO2 cho các nhiệm vụ sau:
+CO2
 # 1. In giá trị CO2 uptake từ lớn nhất đến nhỏ nhất.
+sort(CO2$uptake, decreasing = TRUE)
+
 # 2. Hiển thị các dòng của bộ dữ liệu CO2, nơi Type được đặt thành Quebec và Treatment thành chilled.
+CO2[CO2$Type == "Quebec" & CO2$Treatment == "chilled",]
 # 3. Hiển thị các dòng của bộ dữ liệu CO2, nơi uptake lớn hơn 40 và
 # bộ dữ liệu được sắp xếp theo giá trị conc từ nhỏ nhất đến lớn nhất.
 # Thử giải chỉ một dòng. Nếu bạn cần tạo
 # một đối tượng trung gian - đặt tên là 'temp'.
+temp <- CO2[CO2$uptake > 40, ][order(CO2[CO2$uptake > 40, ]$conc), ]
+temp
 # 4. Làm thế nào để có được một sắp xếp ngẫu nhiên của bộ dữ liệu CO2? GỢI Ý: Bạn có thể muốn có một
 # vector với các chỉ số ngẫu nhiên sẽ đến từ kết quả order(unif(...)).
 # set.seed(123)
