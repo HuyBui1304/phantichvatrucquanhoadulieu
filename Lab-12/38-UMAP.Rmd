@@ -1,8 +1,22 @@
 ---
 title: "38-UMAP"
-output: html_document
+author: "Bùi Minh Huy"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    fig_caption: true
+    fig_height: 5
+    fig_width: 7
+    highlight: tango
+  html_document: default
+header-includes:
+  - \usepackage{graphicx}
+  - \usepackage{fontspec}
+  - \setmainfont{Times New Roman}
 ---
-
 <!--
 
 - Mở rộng sang UMAP
@@ -10,3 +24,129 @@ output: html_document
 - Soạn thảo/ trình bày tương tự như PCA / t-SNE
 
 -->
+# Giới thiệu về UMAP
+
+## Khái niệm
+
+**Uniform Manifold Approximation and Projection(UMAP)** là một kỹ thuật giảm chiều dữ liệu, tương tự như t-SNE, thường được sử dụng để trực quan hóa dữ liệu. Ngoài ra, UMAP còn có thể được sử dụng như một phương pháp giảm chiều phi tuyến tổng quát trong các bài toán học máy.
+
+Thuật toán UMAP được xây dựng dựa trên ba giả định chính về cấu trúc dữ liệu:
+	1.	Dữ liệu phân bố đều trên một đa tạp Riemannian (Riemannian manifold);
+	2.	Metric Riemannian là hằng số cục bộ (hoặc có thể được xấp xỉ là như vậy);
+	3.	Ống phân phối (local connectivity) được kết nối cục bộ.
+	
+## Mục tiêu của UMAP
+
+UMAP có các mục tiêu sau:
+
+  * **Giảm số lượng biến:** UMAP chuyển đổi dữ liệu sang một không gian có số chiều thấp hơn, phù hợp cho các tác vụ xử lý và phân tích tiếp theo.
+  
+	* **Giữ lại cấu trúc dữ liệu:** UMAP cố gắng bảo toàn cả cấu trúc cục bộ (local structure) lẫn cấu trúc tổng thể (global structure) của dữ liệu trong không gian mới.
+	
+	* **Bảo tồn mối quan hệ phi tuyến:** Khác với PCA, UMAP có khả năng nắm bắt và biểu diễn các mối quan hệ phi tuyến giữa các điểm dữ liệu.
+	
+	* **Trực quan hóa dữ liệu:** UMAP đặc biệt hiệu quả trong việc trực quan hóa dữ liệu nhiều chiều trong không gian 2D hoặc 3D, với độ chính xác và sắc nét cao hơn so với nhiều kỹ thuật khác như t-SNE.
+	
+## Quy trình thực hiện UMAP
+
+  1. Chuẩn hóa dữ liệu (nếu cần)
+
+  2. Tìm k hàng xóm gần nhất cho mỗi điểm và xây dựng đồ thị fuzzy biểu diễn cấu trúc cục bộ
+
+  3. Tính toán xác suất kết nối giữa các điểm dựa trên khoảng cách và hàm kernel
+
+  4. Khởi tạo điểm trong không gian thấp chiều và tối ưu hóa đồ thị sao cho bảo toàn cấu trúc so với đồ thị ban đầu
+
+  5. Chiếu dữ liệu sang không gian mới để phục vụ trực quan hóa hoặc các bước phân tích tiếp theo
+  
+# Ứng dụng UMAP với bộ mtcars
+
+## Tải thư viện cần thiết
+
+```{r}
+library(tidyverse)   # Bộ thư viện chứa nhiều công cụ xử lý dữ liệu như dplyr, tidyr, ggplot2,... để thao tác và trực quan hóa dữ liệu
+library(ggplot2)     # Thư viện tạo đồ thị với cú pháp ngữ pháp đồ họa (grammar of graphics) giúp tạo biểu đồ chất lượng cao
+#install.packages(GGally)
+library(GGally)      # Mở rộng của ggplot2, cung cấp các hàm để tạo ma trận tương quan, biểu đồ cặp (pair plots) và trực quan hóa nhiều biến
+library(factoextra)  # Thư viện cho phân tích đa chiều, hỗ trợ phân tích thành phần chính (PCA) và phân cụm (clustering)
+
+```
+
+## Hiểu về bộ dữ liệu mtcars
+
+```{r}
+# Xem cấu trúc bộ dữ liệu mtcars
+str(mtcars)
+
+# Hiển thị một số dòng đầu tiên
+head(mtcars)
+
+# Tóm tắt thống kê
+summary(mtcars)
+```
+
+Bộ dữ liệu mtcars chứa thông tin về 32 mẫu xe với 11 biến mô tả các đặc điểm kỹ thuật:
+
+  - mpg: Miles per gallon (hiệu suất tiêu thụ nhiên liệu)
+  
+  - cyl: Số xi-lanh
+  
+  - disp: Dung tích xi-lanh
+  
+  - hp: Mã lực
+  
+  - drat: Tỷ số truyền động sau 
+  
+  - wt: Trọng lượng (1000 lbs)
+  
+  - qsec: Thời gian chạy 1/4 dặm
+  
+  - vs: Kiểu động cơ (0 = chữ V, 1 = thẳng hàng)
+  
+  - am: Kiểu hộp số (0 = tự động, 1 = số sàn)
+  
+  - gear: Số lượng số
+  
+  - carb: Số lượng bộ chế hòa khí
+  
+## Phân tích tương quan
+
+Trước khi thực hiện t-SNE, chúng ta hãy xem các biến có tương quan như thế nào:
+
+```{r}
+# Tạo ma trận tương quan
+cor_matrix <- cor(mtcars)
+round(cor_matrix, 2)
+
+# Visualize correlation matrix
+ggcorr(mtcars, 
+       method = c("everything", "pearson"), 
+       label = TRUE, 
+       hjust = 0.75, 
+       size = 3, 
+       layout.exp = 2)
+```
+
+Qua ma trận tương quan, chúng ta thấy nhiều biến có tương quan mạnh với nhau. Ví dụ:
+
+- cyl, disp, hp và wt có tương quan dương mạnh với nhau
+- Các biến trên có tương quan âm mạnh với mpg
+
+Điều này chỉ ra rằng dữ liệu có thể có đa cộng tuyến và phù hợp để áp dụng UMAP.
+
+## Tiền xử lý dữ liệu
+
+```{r}
+# Tạo thêm biến nhóm để phân loại xe
+mtcars_labeled <- mtcars %>%
+  mutate(
+    engine_type = factor(vs, labels = c("V-shaped", "Straight")),
+    transmission = factor(am, labels = c("Automatic", "Manual")),
+    cylinders = factor(cyl)
+  )
+
+# Chuẩn bị dữ liệu số cho UMAP
+mtcars_features <- mtcars %>% select(-vs, -am) # Bỏ biến phân loại nhị phân
+# Chuẩn hóa dữ liệu
+mtcars_scaled <- scale(mtcars_features)
+```
