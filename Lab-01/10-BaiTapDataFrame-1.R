@@ -39,4 +39,7 @@ new_rows <- data.frame(
 
 women <- rbind(women, new_rows)
 women
+length(women$height)
 # c) Thêm biến mới vào bộ dữ liệu và đặt tên là "shoe_size". Sử dụng hàm runif để tạo các giá trị cho biến này. Kích thước giày phải là số nguyên giữa 35 và 42.
+women$shoe_size <- runif(17, min = 35, max = 42)
+women

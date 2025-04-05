@@ -84,6 +84,7 @@ library(GGally)      # Mở rộng của ggplot2 cho ma trận tương quan
 ## Hiểu về bộ dữ liệu mtcars
 
 ```{r}
+data(mtcars)  # Khôi phục lại bộ dữ liệu mặc định
 # Xem cấu trúc bộ dữ liệu mtcars
 str(mtcars)
 
@@ -124,6 +125,7 @@ Trước khi thực hiện t-SNE, chúng ta hãy xem các biến có tương qua
 
 ```{r}
 # Tạo ma trận tương quan
+mtcars <-mtcars[sapply(mtcars, is.numeric)]
 cor_matrix <- cor(mtcars)
 round(cor_matrix, 2)
 

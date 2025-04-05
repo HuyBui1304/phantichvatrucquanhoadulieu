@@ -28,9 +28,8 @@ header-includes:
 
 ## Khái niệm
 
-**Uniform Manifold Approximation and Projection(UMAP)** là một kỹ thuật giảm chiều dữ liệu, tương tự như t-SNE, thường được sử dụng để trực quan hóa dữ liệu. Ngoài ra, UMAP còn có thể được sử dụng như một phương pháp giảm chiều phi tuyến tổng quát trong các bài toán học máy.
+**Uniform Manifold Approximation and Projection(UMAP)** là một kỹ thuật giảm chiều dữ liệu, tương tự như t-SNE, thường được sử dụng để trực quan hóa dữ liệu. Ngoài ra, UMAP còn có thể được sử dụng như một phương pháp giảm chiều phi tuyến tổng quát trong các bài toán học máy.Thuật toán UMAP được xây dựng dựa trên ba giả định chính về cấu trúc dữ liệu:
 
-Thuật toán UMAP được xây dựng dựa trên ba giả định chính về cấu trúc dữ liệu:
 	1.	Dữ liệu phân bố đều trên một đa tạp Riemannian (Riemannian manifold);
 	2.	Metric Riemannian là hằng số cục bộ (hoặc có thể được xấp xỉ là như vậy);
 	3.	Ống phân phối (local connectivity) được kết nối cục bộ.
@@ -75,6 +74,7 @@ library(factoextra)  # Thư viện cho phân tích đa chiều, hỗ trợ phân
 ## Hiểu về bộ dữ liệu mtcars
 
 ```{r}
+data(mtcars)
 # Xem cấu trúc bộ dữ liệu mtcars
 str(mtcars)
 
@@ -125,10 +125,10 @@ ggcorr(mtcars,
        hjust = 0.75, 
        size = 3, 
        layout.exp = 2)
+
 ```
 
 Qua ma trận tương quan, chúng ta thấy nhiều biến có tương quan mạnh với nhau. Ví dụ:
-
 - cyl, disp, hp và wt có tương quan dương mạnh với nhau
 - Các biến trên có tương quan âm mạnh với mpg
 
@@ -137,7 +137,7 @@ Qua ma trận tương quan, chúng ta thấy nhiều biến có tương quan m�
 ## Tiền xử lý dữ liệu
 
 ```{r}
-# Tạo thêm biến nhóm để phân loại xe
+# Gán nhãn cho dữ liệu
 mtcars_labeled <- mtcars %>%
   mutate(
     engine_type = factor(vs, labels = c("V-shaped", "Straight")),
@@ -146,7 +146,413 @@ mtcars_labeled <- mtcars %>%
   )
 
 # Chuẩn bị dữ liệu số cho UMAP
-mtcars_features <- mtcars %>% select(-vs, -am) # Bỏ biến phân loại nhị phân
+mtcars_features <- mtcars %>% select(-vs, -am)
+
 # Chuẩn hóa dữ liệu
 mtcars_scaled <- scale(mtcars_features)
+head(mtcars_scaled)
 ```
+
+## Thực hiện UMAP
+```{r}
+if (!require("uwot")) install.packages("uwot")
+library(uwot)
+
+if (!require("ggplot2")) install.packages("ggplot2")
+library(ggplot2)
+
+engine_type <- mtcars_labeled$engine_type
+transmission <- mtcars_labeled$transmission
+cylinders <- mtcars_labeled$cylinders
+car_names <- rownames(mtcars)
+
+set.seed(42)
+mtcar_umap <- umap(mtcars_scaled, n_neighbors = 5,
+                   min_dist = 0.1, metric = "euclidean")
+
+umap_df <- data.frame(
+  x = mtcar_umap[, 1],
+  y = mtcar_umap[, 2],
+  engine_type = engine_type,
+  transmission = transmission,
+  cylinders = cylinders,
+  car = car_names
+)
+
+# Xem trước dữ liệu
+head(umap_df)
+```
+
+## Trực quan hóa UMAP
+```{r}
+# Trực quan hóa theo loại động cơ
+p1 <- ggplot(umap_df, aes(x = x, y = y, color = engine_type)) +
+  geom_point(size = 3, alpha = 0.8) +
+  geom_text(aes(label = car), hjust = 0, vjust = 0, size = 3, nudge_x = 0.5, nudge_y = 0.5, check_overlap = TRUE) +
+  scale_color_viridis_d() +
+  labs(title = "UMAP visualization by Engine Type",
+       x = "UMAP dimension 1",
+       y = "UMAP dimension 2",
+       color = "Engine Type") +
+  theme_minimal()
+
+
+p2 <- ggplot(umap_df, aes(x = x, y = y, color = transmission)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_viridis_d() +
+  labs(title = "UMAP visualization by transmission",
+       x = "UMAP dimension 1",
+       y = "UMAP dimension 2",
+       color = "transmission") +
+  theme_minimal()
+
+
+p3 <- ggplot(umap_df, aes(x = x, y = y, color = cylinders)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_viridis_d() +
+  labs(title = "UMAP visualization by cylinders",
+       x = "UMAP dimension 1",
+       y = "UMAP dimension 2",
+       color = "cylinders") +
+  theme_minimal()
+
+p1
+p2
+p3
+```
+Nhận xét: 
+- UMAP đã tạo ra một biểu diễn hai chiều từ dữ liệu mtcars, trong đó các xe có đặc điểm kỹ thuật tương đồng thường được phân bố gần nhau trên mặt phẳng.
+- Kết quả cho thấy có sự phân tách khá rõ ràng giữa các loại động cơ (engine_type), kiểu hộp số (transmission) và số xi-lanh (cylinders).
+- Quan sát cho thấy các xe sử dụng động cơ V-shaped có xu hướng tạo thành một nhóm riêng biệt, tương tự với các xe có cùng số xi-lanh.
+
+
+## Thực hiện UMAP với các tham số khác nhau
+
+```{r, fig.height= 8}
+library(uwot)
+library(dplyr)
+library(ggplot2)
+
+run_umap <- function(n_neighbors_val, min_dist_val) {
+  set.seed(42)
+  result <- umap(mtcars_scaled,
+                 n_neighbors = n_neighbors_val,
+                 min_dist = min_dist_val,
+                 metric = "euclidean")
+
+  data.frame(
+    x = result[, 1],
+    y = result[, 2],
+    engine_type = mtcars_labeled$engine_type,
+    transmission = mtcars_labeled$transmission,
+    cylinders = mtcars_labeled$cylinders,
+    car = rownames(mtcars),
+    n_neighbors = paste0("n = ", n_neighbors_val),
+    min_dist = paste0("min_dist = ", min_dist_val)
+  )
+}
+
+neighbors_values <- c(5, 15, 30)
+min_dist_values <- c(0.01, 0.1, 0.5)
+
+params_grid <- expand.grid(n_neighbors = neighbors_values,
+                           min_dist = min_dist_values)
+
+umap_all <- bind_rows(
+  mapply(function(n, d) run_umap(n, d),
+         params_grid$n_neighbors, params_grid$min_dist,
+         SIMPLIFY = FALSE)
+)
+
+ggplot(umap_all, aes(x = x, y = y, color = engine_type)) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  scale_color_viridis_d() +
+  facet_grid(min_dist ~ n_neighbors, labeller = label_both) +
+  labs(title = "UMAP with different values of n_neighbors and min_dist",
+       x = "UMAP dim 1",
+       y = "UMAP dim 2",
+       color = "Engine Type") +
+  theme_minimal()
+```
+
+Nhận xét:
+UMAP cho thấy mức độ tách biệt giữa hai loại động cơ phụ thuộc vào giá trị n_neighbors và min_dist. Khi n_neighbors = 5 và min_dist = 0.1, hai nhóm V-shaped và Straight được phân tách rõ ràng nhất. Khi tăng n_neighbors, các cụm dần hòa trộn, đặc biệt rõ ở n = 30. Giá trị min_dist càng lớn thì cụm càng bị dàn trải, làm giảm độ rõ nét. Tổng thể, tổ hợp n_neighbors = 5, min_dist = 0.1 cho kết quả trực quan tốt nhất.
+
+# so sánh UMAP với PCA
+
+## Thực hiện PCA
+
+```{r}
+# Thực hiện PCA trên cùng bộ dữ liệu mtcars
+pca_result <- prcomp(mtcars_scaled, center = TRUE, scale. = TRUE)
+
+# Tạo dataframe với kết quả PCA và nhãn
+pca_df <- data.frame(
+  x = pca_result$x[, 1],
+  y = pca_result$x[, 2],
+  engine_type = engine_type,
+  transmission = transmission,
+  cylinders = cylinders,
+  car = car_names
+)
+
+# Xem tóm tắt kết quả PCA
+summary(pca_result)
+```
+
+## Phân tích các thành phần chính
+
+```{r}
+# Biplot phân tích các biến đóng góp vào PCA
+fviz_pca_biplot(pca_result, 
+                label = "var",
+                col.ind = "cos2",
+                gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+                repel = TRUE,
+                title = "PCA Biplot: Bien va quan sat")
+
+# Phân tích đóng góp của các biến vào PC1 và PC2
+p1 <- fviz_contrib(pca_result, choice = "var", axes = 1, top = 10)
+p2 <- fviz_contrib(pca_result, choice = "var", axes = 2, top = 10)
+gridExtra::grid.arrange(p1, p2, ncol = 2)
+```
+
+## So sánh trực quan giữa PCA và UMAP
+
+```{r}
+# Vẽ biểu đồ PCA theo kiểu động cơ
+pca_plot1 <- ggplot(pca_df, aes(x = x, y = y, color = engine_type)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_viridis_d() +
+  labs(title = "PCA by Engine Type",
+       x = "PC1",
+       y = "PC2",
+       color = "Engine Type") +
+  theme_minimal()
+
+# Vẽ biểu đồ t-SNE theo kiểu động cơ
+umap_plot1 <- ggplot(umap_df, aes(x = x, y = y, color = engine_type)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_viridis_d() +
+  labs(title = "UMAP by Engine Type",
+       x = "UMAP 1",
+       y = "UMAP 2",
+       color = "Engine Type") +
+  theme_minimal()
+
+# Hiển thị so sánh theo kiểu động cơ
+gridExtra::grid.arrange(pca_plot1, umap_plot1, ncol = 2)
+
+# Vẽ biểu đồ PCA theo số xi-lanh
+pca_plot2 <- ggplot(pca_df, aes(x = x, y = y, color = cylinders)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_viridis_d(option = "inferno") +
+  labs(title = "PCA by Cylinders",
+       x = "PC1",
+       y = "PC2",
+       color = "Cylinders") +
+  theme_minimal()
+
+# Vẽ biểu đồ t-SNE theo số xi-lanh
+umap_plot2 <- ggplot(umap_df, aes(x = x, y = y, color = cylinders)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_viridis_d(option = "inferno") +
+  labs(title = "UMAP by Cylinders",
+       x = "UMAP 1",
+       y = "UMAP 2",
+       color = "Cylinders") +
+  theme_minimal()
+
+# Hiển thị so sánh theo số xi-lanh
+gridExtra::grid.arrange(pca_plot2, umap_plot2, ncol = 2)
+```
+Nhận xét khi so sánh PCA và UMAP trên bộ dữ liệu mtcars:
+
+ - PCA cho thấy có xu hướng tách nhóm giữa động cơ V-shaped và Straight, nhưng các điểm vẫn còn xen kẽ, cụm chưa thực sự rõ ràng.
+ - UMAP thể hiện rõ ràng hơn: hai nhóm động cơ được phân tách tốt hơn, cụm không bị lẫn và có khoảng cách ổn định.
+  Kết luận : UMAP cho kết quả trực quan hóa cụm xi-lanh rõ ràng và sắc nét hơn PCA.
+  
+  
+## Phân tích bộ dữ liệu USArrests với UMAP
+
+```{r}
+# Tải bộ dữ liệu USArrests
+data(USArrests)
+
+# Xem cấu trúc và thông tin cơ bản
+str(USArrests)
+head(USArrests)
+
+# Tóm tắt thống kê
+summary(USArrests)
+```
+
+Bộ dữ liệu USArrests chứa thông tin về tỷ lệ tội phạm cho 50 bang của Hoa Kỳ vào năm 1973 với các biến:
+- Murder: Số vụ giết người trên 100,000 dân
+- Assault: Số vụ hành hung trên 100,000 dân
+- UrbanPop: Tỷ lệ dân số đô thị (%)
+- Rape: Số vụ hiếp dâm trên 100,000 dân
+
+```{r}
+# Chuẩn bị dữ liệu
+state_names <- rownames(USArrests)
+arrests_data <- USArrests
+
+# Chuẩn hóa dữ liệu
+arrests_scaled <- scale(arrests_data)
+
+set.seed(42)
+arrests_umap <- umap(arrests_scaled, n_neighbors = 15, min_dist = 0.1)
+
+# Tạo dataframe từ kết quả
+arrests_umap_df <- data.frame(
+  x = arrests_umap[, 1],
+  y = arrests_umap[, 2],
+  state = state_names
+)
+
+# Ghép dữ liệu gốc
+arrests_umap_df <- cbind(arrests_umap_df, arrests_data)
+
+northeast <- c("Maine", "New Hampshire", "Vermont", "Massachusetts", "Rhode Island", 
+               "Connecticut", "New York", "New Jersey", "Pennsylvania")
+midwest <- c("Ohio", "Indiana", "Illinois", "Michigan", "Wisconsin", 
+             "Minnesota", "Iowa", "Missouri", "North Dakota", "South Dakota", 
+             "Nebraska", "Kansas")
+south <- c("Delaware", "Maryland", "Virginia", "West Virginia", "North Carolina",
+           "South Carolina", "Georgia", "Florida", "Kentucky", "Tennessee", 
+           "Alabama", "Mississippi", "Arkansas", "Louisiana", "Oklahoma", "Texas")
+west <- c("Montana", "Idaho", "Wyoming", "Colorado", "New Mexico", "Arizona", "Utah",
+          "Nevada", "Washington", "Oregon", "California", "Alaska", "Hawaii")
+
+arrests_umap_df$region <- NA
+arrests_umap_df$region[arrests_umap_df$state %in% northeast] <- "Northeast"
+arrests_umap_df$region[arrests_umap_df$state %in% midwest] <- "Midwest"
+arrests_umap_df$region[arrests_umap_df$state %in% south] <- "South"
+arrests_umap_df$region[arrests_umap_df$state %in% west] <- "West"
+arrests_umap_df$region <- factor(arrests_umap_df$region)
+
+p1 <- ggplot(arrests_umap_df, aes(x = x, y = y, color = region)) +
+  geom_point(size = 3) +
+  geom_text(aes(label = state), vjust = -0.7, size = 3, check_overlap = TRUE) +
+  scale_color_viridis_d() +
+  labs(title = "UMAP - US States by Crime Rates",
+       subtitle = "Colored by Geographic Region",
+       x = "UMAP 1", y = "UMAP 2") +
+  theme_minimal()
+
+
+p2 <- ggplot(arrests_umap_df, aes(x = x, y = y, color = Murder)) +
+  geom_point(size = 3) +
+  geom_text(aes(label = state), vjust = -0.7, size = 3, check_overlap = TRUE) +
+  scale_color_viridis_c() +
+  labs(title = "UMAP - Murder Rate",
+       subtitle = "Number of murders per 100,000 population",
+       x = "UMAP 1", y = "UMAP 2") +
+  theme_minimal()
+
+
+p3 <- ggplot(arrests_umap_df, aes(x = x, y = y, color = UrbanPop)) +
+  geom_point(size = 3) +
+  geom_text(aes(label = state), vjust = -0.7, size = 3, check_overlap = TRUE) +
+  scale_color_viridis_c(option = "plasma") +
+  labs(title = "UMAP - Urban Population",
+       subtitle = "Percentage of population living in urban areas (%)",
+       x = "UMAP 1", y = "UMAP 2") +
+  theme_minimal()
+
+p1
+p2
+p3
+```
+
+Nhận xét: 
+	•	UMAP đã biểu diễn dữ liệu USArrests trong không gian 2D, bảo toàn cấu trúc cục bộ và toàn cục tốt hơn PCA.
+	•	Các bang trong cùng khu vực địa lý thường gần nhau trong không gian UMAP.
+	•	Các bang có tỷ lệ giết người cao hoặc dân số đô thị cao được nhóm lại rõ ràng.
+	•	Đây là công cụ mạnh để khám phá và phát hiện mẫu trong dữ liệu xã hội học.
+	
+# Giảm chiều dữ liệu với **UMAP** cho bài toán thực tế
+
+## Ứng dụng UMAP trong phân tích dữ liệu lớn
+
+Trong phần này, chúng ta sẽ thảo luận cách **UMAP** có thể được áp dụng trong các bài toán thực tế, đặc biệt khi xử lý dữ liệu có số chiều và kích thước lớn.
+
+### Quy trình xử lý dữ liệu lớn với UMAP
+
+1. **Làm sạch và chuẩn hóa dữ liệu**
+   - Xử lý giá trị thiếu, loại bỏ ngoại lai
+   - Chuẩn hóa các biến số để đưa về cùng thang đo
+
+2. **Giảm kích thước dữ liệu (nếu cần)**
+   - Với tập dữ liệu rất lớn (hàng triệu mẫu), có thể lấy mẫu đại diện
+   - Có thể kết hợp giảm chiều bằng PCA (ví dụ còn 50–100 chiều) trước khi áp dụng UMAP
+
+3. **Áp dụng UMAP**
+   - Tùy chỉnh các tham số như `n_neighbors` và `min_dist` để điều chỉnh mức độ bảo toàn cấu trúc cục bộ hoặc toàn cục
+   - Có thể huấn luyện UMAP một lần và áp dụng ánh xạ này cho dữ liệu mới (generalizable)
+
+4. **Giải thích và ứng dụng kết quả**
+   - Kết hợp với các thuật toán phân cụm hoặc trực quan hóa
+   - Hữu ích trong phân tích khám phá, phát hiện mẫu hoặc bất thường
+
+### Ví dụ ứng dụng thực tế của UMAP
+
+1. **Phân tích gene và biểu hiện protein**
+   - Giảm chiều dữ liệu gene (vài nghìn chiều) để phân tích cụm tế bào
+   - Phát hiện các phân nhóm chức năng hoặc bệnh lý
+
+2. **Xử lý văn bản và ngôn ngữ tự nhiên**
+   - Trực quan hóa vector từ hoặc embedding câu văn
+   - Hỗ trợ khám phá các nhóm chủ đề tương đồng
+
+3. **Phát hiện gian lận và bất thường**
+   - Giảm chiều dữ liệu giao dịch tài chính
+   - Nhận diện các điểm bất thường khó thấy trong không gian gốc
+
+## Các khuyến nghị khi sử dụng UMAP
+
+1. **Tiền xử lý dữ liệu:**
+   - **Bắt buộc chuẩn hóa** nếu dữ liệu có thang đo khác nhau
+   - Không cần loại bỏ trùng lặp như t-SNE
+
+2. **Tham số quan trọng:**
+   - `n_neighbors`: kiểm soát độ "cục bộ", thường chọn từ 5–50
+   - `min_dist`: kiểm soát khoảng cách tối thiểu giữa các điểm sau khi chiếu xuống không gian thấp
+     - Nhỏ → cụm chặt hơn (phù hợp phân cụm)
+     - Lớn → cấu trúc lan tỏa hơn (bảo toàn toàn cục)
+
+3. **Khả năng ánh xạ dữ liệu mới:**
+   - UMAP có thể **lưu ánh xạ đã học** và **dự đoán cho dữ liệu mới** (`transform()`)
+
+4. **Tính ổn định và tốc độ:**
+   - Kết quả thường ổn định hơn t-SNE
+   - **Nhanh hơn đáng kể** so với t-SNE, nhất là với dữ liệu lớn
+
+## So sánh UMAP với các phương pháp giảm chiều khác
+
+| Phương pháp    | Tuyến tính | Bảo toàn cấu trúc     | Tốc độ       | Khả năng mở rộng | Dễ giải thích | Ứng dụng chính                   |
+|----------------|------------|------------------------|--------------|------------------|---------------|----------------------------------|
+| PCA            | Có         | Toàn cục               | Nhanh        | Tốt              | Cao           | Giảm chiều, khám phá biến chính |
+| t-SNE          | Không      | Cục bộ                 | Chậm         | Kém              | Thấp          | Trực quan hóa cụm dữ liệu nhỏ   |
+| **UMAP**       | Không      | Cục bộ & toàn cục      | **Nhanh hơn t-SNE** | **Tốt hơn t-SNE** | Trung bình    | Trực quan hóa, phân cụm         |
+| LDA            | Có         | Phân biệt theo nhãn    | Nhanh        | Tốt              | Cao           | Phân loại có giám sát           |
+| MDS            | Tùy        | Toàn cục               | Trung bình   | Trung bình       | Trung bình    | Phân tích tương đồng            |
+| Autoencoder    | Không      | Tùy thuộc mô hình      | Chậm         | Tốt              | Thấp          | Giảm chiều phi tuyến phức tạp   |
+
+## Một số lưu ý khi sử dụng UMAP
+
+- Tránh hiểu sai: UMAP **không bảo toàn khoảng cách tuyệt đối**, mà bảo toàn **quan hệ hàng xóm** giữa các điểm
+- Kết quả phụ thuộc vào tham số `n_neighbors` và `min_dist` → nên thử nghiệm nhiều giá trị
+- Có thể dùng cho cả dữ liệu không nhãn và có nhãn (semi-supervised)
+- Nếu cần giải thích kết quả kỹ, nên kết hợp PCA để hiểu vai trò của từng biến
+
+## Kết luận
+
+**UMAP** là công cụ giảm chiều mạnh mẽ, có khả năng:
+
+1. **Bảo toàn cấu trúc dữ liệu cục bộ và toàn cục** tốt hơn t-SNE
+2. **Tốc độ xử lý cao**, phù hợp dữ liệu lớn
+3. **Có khả năng tổng quát hóa**, áp dụng được cho dữ liệu mới
+
+UMAP không chỉ giúp trực quan hóa dữ liệu đa chiều mà còn hỗ trợ hiệu quả cho các bài toán như phân cụm, khám phá dữ liệu và phát hiện bất thường. Đây là công cụ nên được ưu tiên sử dụng khi làm việc với dữ liệu lớn và phức tạp trong thực tiễn.

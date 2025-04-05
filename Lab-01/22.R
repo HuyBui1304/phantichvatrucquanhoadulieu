@@ -29,7 +29,7 @@ if(require(wesanderson)){
 # bằng bảng màu Moonrise1 (4 màu rời rạc) từ gói wesanderson.
 if(require(wesanderson)){
   # Tạo một vector 10 màu liên tục
-  Moonrise1_colors <- wes_palette("Moonrise1", 5, type="discrete")
+  Moonrise1_colors <- wes_palette("Moonrise1", 4, type="discrete")
   
   # Vẽ histogram
   hist(USArrests$Rape, main = "Phân phối số vụ hiếp dâm ở Mỹ",

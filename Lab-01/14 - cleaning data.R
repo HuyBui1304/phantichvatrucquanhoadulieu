@@ -1,6 +1,6 @@
 
 # Loading data
-alcohol <- read.csv("data/dataset - student alcohol consumption/student-alcohol.csv")
+alcohol <- read.csv('/Users/huy/Documents/phân tích và trực quan hoá dữ liệu/data/dataset - student alcohol consumption/student-alcohol.csv')
 head(alcohol)
 str(alcohol)
 

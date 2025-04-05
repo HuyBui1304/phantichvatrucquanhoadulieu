@@ -135,3 +135,4 @@ vectorNamed["age"]
 vectorNamed["surname"]
 
 vectorNamed[c("surname", "age")]
+

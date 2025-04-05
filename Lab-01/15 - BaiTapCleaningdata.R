@@ -84,3 +84,4 @@ clients$Education <- factor(clients$Education,
 save(clients, file = "clientsInR.RData")
 # 8. Lưu kết quả để tham khảo sau này! Sử dụng file RData với tên "clientsInR".
 write.csv(clients, "clients_processed.csv", row.names = FALSE)
+

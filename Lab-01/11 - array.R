@@ -53,18 +53,18 @@ set1[2,]
 set1[2,2]
 set1[,2]
 
-
+set1
 #lọc theo điều kiện
-set1[set1$Product =="Cá kho", ]
-set1[set1$Product =="Thịt kho", ]
+set1[set1$Product =="Cá Kho", ]
+set1[set1$Product =="Thịt Kho", ]
 
-set1[set1$Product =="Cá kho" & set1$IdClient == 5, ]
-set1[set1$Product =="Cá kho" | set1$IdClient == 3, ]
+set1[set1$Product =="Cá Kho" & set1$IdClient == 5, ]
+set1[set1$Product =="Cá Kho" | set1$IdClient == 3, ]
 
 # lấy ra dataset con
 setA <- set1[set1$Product =="Cá Kho", ]
 setA
-setB <- subset(set1, Product == "Thịt Kho")
+setB <- subset(set1, Product == "Cá Kho")
 setB
 
 set1

@@ -51,7 +51,7 @@ missCO2[is.na(missCO2$conc), ]
 
 str(missCO2)
 
-substring(missCO2$weight, 1, lenght(missCO2$weight)-2)
+substring(missCO2$weight, 1, nchar(missCO2$weight)-2)
 missCO2$weightNumber <- as.numeric(substring(missCO2$weight, 1, nchar(missCO2$weight)-2))
 missCO2
 
