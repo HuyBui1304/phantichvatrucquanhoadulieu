@@ -9,7 +9,7 @@ Sys.setenv(LANGUAGE = 'en')
 
 df <- read.csv('/Users/huy/Documents/phân tích và trực quan hoá dữ liệu/Lab-03/water_potability.csv')
 dataset_name <- "water"
-
+head(df)
 df$Potability <- as.factor(df$Potability)
 levels(df$Potability) <- c("Không", "Có")
 
@@ -60,7 +60,7 @@ plot(roc_obj, main="Đường cong ROC", col="blue", lwd=2)
 legend("bottomright", legend = paste("AUC =", round(auc_value, 4)), col = "blue", lwd = 2)
 
 
-model_full <- glm(Potability ~ ., data = train_data, family = binomial)
+model_full <- glm(Potability ~ ., data = train_data, family = binomial(link = "logit"))
 model_step <- step(model_full, direction = "both")
 summary(model_step)
 

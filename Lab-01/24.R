@@ -18,8 +18,9 @@ for( i in 1: length(logicalVector)){
 counter
 
 x <- 100
-if(x%%2==0){
-  print(x," la so chan");
-}else{  
-  print(x, "la so le")
+if(x %% 2 == 0){
+  print(paste(x, "la so chan"))
+} else {
+  print(paste(x, "la so le"))
 }
+

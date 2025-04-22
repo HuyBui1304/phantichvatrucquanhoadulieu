@@ -29,6 +29,8 @@ summary(model1)
 model1$coefficients
 model1$coefficients[[1]]
 model1$coefficients[[2]]
+model1$coefficients[[3]]
+
 
 # =============================
 

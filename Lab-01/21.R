@@ -1,17 +1,13 @@
-Sys.setlocale("LC_ALL","English")
+Sys.setlocale("LC_ALL", "en_US.UTF-8")
 Sys.setenv(LANGUAGE='en')
 
 
-getwd()
-setwd('D:/R-Intro/R-Intro/')
-
 # Reading the data
-life <- read.csv("data/dataset - life expectancy/Life Expectancy Data.csv");
+life <- read.csv('/Users/huy/Documents/phân tích và trực quan hoá dữ liệu/data/dataset - life expectancy/Life Expectancy Data.csv');
 head(life)
 
 # set with observations regarding Poland
 lifePL <-subset(life, Country=="Poland")
-
 # overview of the whole dataset
 View(lifePL)
 
@@ -92,7 +88,7 @@ lines(lifePLDE[lifePLDE$Country=="Germany", "Year"],
 )
 
 # Thêm chú thích
-legend("topright", # Vị trí
+legend("topright",
        c("Poland", "Germany"),
        lty = c(2,4)
 )
@@ -114,7 +110,7 @@ lines(lifePLDE[lifePLDE$Country=="Germany", "Year"],
 )
 
 # Thêm chú thích
-legend("topright", # Vị trí
+legend("topright",
        c("Poland", "Germany"),
        lty = c(2,4)
 )
@@ -136,7 +132,7 @@ lines(lifePLDE[lifePLDE$Country=="Germany", "Year"],
 )
 
 # Thêm chú thích
-legend("topright", # Vị trí
+legend("topright", 
        c("Poland", "Germany"),
        lty = c(2,4)
 )
@@ -166,7 +162,6 @@ legend("topleft", c("Poland", "Germany"), lty = c(2, 4))
 title("Life expectancy in Poland and in Germany")
 abline(v = 2004, lty = 3, col = "lightblue4")
 text(2002, 76.5, labels = c("Poland in EU"))
-
 # Thêm mũi tên
 arrows(2002, 76, 2004, 75, col="lightskyblue3")
 
@@ -193,7 +188,7 @@ legend("topleft", c("Poland", "Germany"),
 title("Life expectancy in Poland and in Germany")
 abline(v = 2004, lty = 3, col = "yellow")
 text(2002, 76.5, labels = c("Poland in EU"))
-arrows(2002, 76, 2004, 75, col = "green")
+arrows(2002, 76, 2004, 75, col = "black")
 
 
 # 2.12 Thay đổi độ dày đường
@@ -213,7 +208,7 @@ lines(lifePLDE[lifePLDE$Country=="Germany", "Year"],
       lifePLDE[lifePLDE$Country=="Germany", "Life.expectancy"], 
       lty = 4, 
       col = "blue",
-      lwd=2)  # Màu cho đường Đức
+      lwd=2)  
 
 # Cập nhật chú thích với màu sắc mới
 legend("topleft", c("Poland", "Germany"), 
@@ -222,7 +217,7 @@ legend("topleft", c("Poland", "Germany"),
        lwd=2)
 
 title("Life expectancy in Poland and in Germany")
-abline(v = 2004, lty = 3, col = "brown", lwd=4)
+abline(v = 2004, lty = 3, col = "brown", lwd=3)
 text(2002, 76.5, labels = c("Poland in EU"))
 arrows(2002, 76, 2004, 75, col = "green", lwd=3)
 
@@ -325,4 +320,3 @@ barplot(
   names.arg = c("red", "blue", "#00FF00", rgb(1,0,1), "darkblue"),
   main = "Các cách chỉ định màu sắc trong R"
 )
-

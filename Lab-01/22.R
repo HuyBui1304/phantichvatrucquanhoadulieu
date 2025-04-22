@@ -179,8 +179,6 @@ barplot(silver10$Silver.Medal,
         font.lab = 2,                           
         border = "navy")
 
-grid(nx = NA, ny = NULL, col = "black", lty = "dashed")
-
 # Lưu biểu đồ thành tệp PNG và đặt tên theo mã số sinh viên của bạn.
 dev.copy(png, "2286400009.png", width=1200, height=800)
 dev.off()

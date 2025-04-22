@@ -23,7 +23,8 @@ library(pROC)       # Cho vẽ đường cong ROC
 
 # Đọc dữ liệu
 library(readr)
-diabetes <- read_csv("D:/R-Intro/R-Intro/Lab-05/diabetes.csv")
+diabetes <- read_csv(diabetes <- read_csv('/Users/huy/Documents/phân tích và trực quan hoá dữ liệu/Lab-05/diabetes.csv')
+)
 View(diabetes)
 
 # Xem cấu trúc dữ liệu
@@ -64,7 +65,7 @@ diabetes$Outcome <- factor(diabetes$Outcome, levels = c(0, 1),
 # Vẽ biểu đồ hộp cho từng đặc trưng
 par(mfrow = c(2, 4))
 for (col in 1:8) {
-  boxplot(diabetes[, col] ~ diabetes$Outcome,
+  boxplot(diabetes[[col]] ~ diabetes$Outcome,  # Sử dụng [[col]] thay vì [, col]
           main = names(diabetes)[col],
           xlab = "Kết quả",
           ylab = "Giá trị",
@@ -249,29 +250,7 @@ cat("   - K-NN:", round(conf_matrix_knn$byClass["F1"] * 100, 2), "%\n")
 cat("   - Logistic Regression:", round(conf_matrix_logit$byClass["F1"] * 100, 2), "%\n")
 
 # 6.5 So sánh đường cong ROC và AUC
-# Vẽ đường cong ROC cho K-NN
-roc_knn <- roc(as.numeric(y_test) - 1, knn_prob)
-auc_knn <- auc(roc_knn)
 
-# Vẽ đường cong ROC cho Logistic Regression
-roc_logit <- roc(as.numeric(y_test) - 1, logit_prob)
-auc_logit <- auc(roc_logit)
-
-# Vẽ biểu đồ so sánh ROC
-# Đặt cửa sổ đồ thị
-par(mfrow = c(1, 1))  # Đặt lại layout cửa sổ đồ thị thành 1x1
-
-# Vẽ đường cong ROC cho K-NN
-plot(roc_knn, 
-     main = "So sánh đường cong ROC", 
-     col = "blue", 
-     lwd = 2, 
-     xlab = "Tỷ lệ dương tính giả (1-Specificity)", 
-     ylab = "Tỷ lệ dương tính thật (Sensitivity)")
-
-cat("\n7. Diện tích dưới đường cong ROC (AUC):\n")
-cat("   - K-NN:", round(auc_knn, 3), "\n")
-cat("   - Logistic Regression:", round(auc_logit, 3), "\n")
 
 # 6.6 So sánh trực quan
 # Vẽ biểu đồ so sánh các chỉ số

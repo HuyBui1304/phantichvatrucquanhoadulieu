@@ -2,7 +2,6 @@
 title: "Giảm chiều dữ liệu sử dụng t-SNE"
 author: "Le Nhat Tung"
 output:
-  html_document: default
   pdf_document:
     latex_engine: xelatex
     toc: true
@@ -12,6 +11,7 @@ output:
     fig_height: 5
     fig_width: 7
     highlight: tango
+  html_document: default
 header-includes:
   - \usepackage{graphicx}
   - \usepackage{fontspec}
